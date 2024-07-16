@@ -306,6 +306,7 @@ radius_value = radius_spinbox_var.get() # 실행 화면에서 g키 누르면 이
 
 
 
+
 def whileTrue():
     animate()
     tk.after(100, whileTrue)
