@@ -12,20 +12,83 @@ userInterface.place(x=0, y=0)
 display = Frame(tk, relief = "solid", bd = 2, width = 600, height = 600)
 display.place(x = 300, y = 0)
 
-canvas  = Canvas(display, bd=0, bg='whitesmoke')
+canvas  = Canvas(display, relief="solid", bd=0, width = 600, height = 600, bg='white')
+canvas.pack()
 
 objectList = []
 
 
-def mouse_position(event):
+def mouse_position(event):                    #마우스 위치 받아오기
+    global objectList
     mousex, mousey = event.x, event.y
     place_circle(mousex, mousey)
 
-def place_circle(x, y):
+def place_circle(x, y):                       #원 그리기
     global objectList
-    objectList.append([x, y])
+    objectList.append([x, y, radius_value, 0, 0])   #[x location, y location, radius, x velocity, y velocity]
+    canvas.create_oval(x-radius_value, y-radius_value, x+radius_value, y+radius_value)
 
-display.bind('<Button-1>', mouse_position)
+canvas.bind('<Button-1>', mouse_position)
+
+def falling(k):                                #중력 구현
+    global objectList
+    objectList[k][4] += 9.8
+    print(objectList, 'falling')
+
+def collisionCheck(k):
+    global xgap, ygap, objectList
+    for j in range(len(objectList)-1, k-1, -1):
+        xgap = objectList[k][0] - objectList[j][0]
+        ygap = objectList[k][1] - objectList[j][1]
+
+        if xgap**2 + ygap**2 <= (objectList[k][2] + objectList[j][2])**2 :
+            collision(k, j)
+
+def collision(a, b):
+    global objectList
+    objectList[a][3] = xgap*10
+    objectList[a][4] = ygap*(-10)
+    objectList[b][3] = xgap*(-10)
+    objectList[b][4] = ygap*10
+
+def animate():
+    global objectList
+    for i in range(len(objectList)):
+        falling(i)
+        collisionCheck(i)
+
+    for i in range(len(objectList)):
+        print(objectList)
+        canvas.move(i+1, objectList[i][3], objectList[i][4])
+        canvas.update()
+
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+#왜안돼?
+        
+
+def azzui():
+    ...
 
 def clear():           # clear the window (기능 추가 필요함)
     global huhu
@@ -71,18 +134,18 @@ def closewarn():       # close the window with warnning window \ tempwarn 참고
     yescbutton.pack()
     noescbutton.pack()
 
-def aboutlc():
-    AYOE = "About DirectCurrent Circuit \n Visualizing DirectCurrent Circuit And Experience It \n \n \n Editors: JaeMin.L JunSeok.S HyunJune.J TeaHui.L \n email: rkddkdus05@gmail.com"
+def aboutPE():
+    AYOE = "About Physics Engine \n Visualizing Physics Engine And Experience It \n \n \n Editors: JunSeok.S HyunJune.J \n email: rkddkdus05@gmail.com"
     aboutLC = Toplevel(tk)
     aboutLC.geometry("320x200+820+100")
     aboutLC.resizable(False, False)
-    aboutLC.title("About DirectCurrent Circuit")
+    aboutLC.title("About Physic Engine")
     lclabel = Label(aboutLC, text = AYOE, width = 300, height = 150, fg = "medium purple", relief = "solid", bitmap = "info", compound = "top")
     lclabel.pack()
     lcbutton = Button(aboutLC, width = 10, text = "close", overrelief = "solid", command = aboutLC.destroy)
     lcbutton.pack()
 
-def lchelp():
+def PEhelp():
     AYOE = "DirectCurrent Circuit Help \n Commands \n \n \n [m(ㅡ)] > [fill 'ㅡ'wire] \n [l(ㅣ)] > [fill 'ㅣ'wire] \n \n derived from 'ㅡ' is fill Current Distribution wire \n [n(ㅜ)] > [fill 'ㅜ'wire] \n [h(ㅗ)] > [fill 'ㅗ'wire] \n \n derived from 'ㅣ' is fill Current Collecting wire \n [j(ㅓ)] > [fill 'ㅓ'wire] \n [k(ㅏ)] > [fill 'ㅏ'wire] \n \n [s(ㄴ)] > [fill 'ㄴ'wire] \n [b] > [set battery]  \n [r] > [set resistance]  \n [space] > [rotate wire] \n [Esc] > [Exit] \n [Enter] > [Clear] \n [e] > [Erase] \n [o] > [Operate] \n [1] > [Resistance1] \n [2] > [Resistance2] \n [3] > [Resistance3] \n [4] > [Resistance4] \n [5] > [Resistance5] \n [6] > [Resistance6] "
     LCHelp = Toplevel(tk)
     LCHelp.geometry("320x520+820+100")
@@ -122,7 +185,7 @@ menu2 = Menu(menubar, tearoff = 0, selectcolor = "green")
 
 menu2.add_radiobutton(label = "Undo", state = "disabled") # 미안한데 작동 안돼
 menu2.add_radiobutton(label = "Redo") # 미안한데 작동 안돼
-menu2.add_radiobutton(label = "Cut") # 미안한데 작동 안돼
+menu2.add_radiobutton(label = "Cut") # 미안한데 작동 안돼(, command = fuction 없으면 작동 안 된다 보면 됨)
 menubar.add_cascade(label = "Edit", menu = menu2)
 
 menu3 = Menu(menubar, tearoff = 0)
@@ -134,9 +197,9 @@ menubar.add_cascade(label = "Run", menu = menu3)
 
 menu4 = Menu(menubar, tearoff = 0)
 
-menu4.add_command(label = "About DirectCurrentCircuit", command = aboutlc)
+menu4.add_command(label = "About DirectCurrentCircuit", command = aboutPE)
 menu4.add_separator()
-menu4.add_command(label = "D.C. Help", command = lchelp)
+menu4.add_command(label = "D.C. Help", command = PEhelp)
 menubar.add_cascade(label = "Help", menu = menu4)
 
 tk.config(menu = menubar)
@@ -149,11 +212,7 @@ def kuhuhuhu(): # Kufufu 💢💢💢
     print(mousex, mousey)
     
 
-def whileTrue():
-    global mousex, mousey 
-    
-    tk.after(100, whileTrue)
-    
+# ㅎㅇ
 
 # 키 입력 저장하는 변수
 keypressed = 0
@@ -166,28 +225,20 @@ def MikoMikoNyanNyan(event): # 미코미코 냥냥♪
         # test()
     if event.keysym == 'a' :
         kuhuhuhu()
-        print("Kufufu~💢💢💢") 
+        print("Kufufu~") 
     elif event.keysym == 'Escape' :
         closewarn()
-    elif event.keysym == 'Return' : # 대충 엔터키라는 뜻
+    elif event.keysym == 'Return' : # 대충 Return=엔터키라는 뜻
         tempwarn()
+    elif event.keysym == 'g' :
+        print(radius_value)
 
 tk.bind("<KeyPress>", MikoMikoNyanNyan)
 
 
 
 
-
-# 
-# # 다른거 테스트 - 안 쓸거임(삭제요망)   그럼 니가 지워 싸발아ㅋ
-# def test(event):
-#     x1, y1 = (event.x - 1), (event.y - 1)
-#     x2, y2 = (event.x + 1), (event.y + 1)
-#     print(x1, y1, x2, y2)
-
-
-
-def setresistance(self):
+def setradius(self):
     explanationresistance.config(text = '반지름 크기를 선택')
     if self == '':
         return True
@@ -195,12 +246,12 @@ def setresistance(self):
     valid = False
     
     if self.isdigit():
-        if (int(self) >= 0 and int(self) <= 100):
+        if (int(self) >= 0 and int(self) <= 100): # 0~100 값만 사용 가능함ㅋ
             valid = True
     return valid
 
-def errorsetresistance(self):
-        unknowntext = str(self) + ' is invalid value \n valid value: 0~100'  #  위쪽에 정의되지 않은 키 입력들을 unknowntext로 간주, <입력된 키값, 'is not a valid key'>로써 나타냄
+def errorsetradius(self):
+        unknowntext = str(self) + ' is invalid value \n try valid value: 0~100'  #  위쪽에 정의되지 않은 키 입력들을 unknowntext로 간주, <입력된 키값, 'is not a valid key'>로써 나타냄 (나중에 화면 크기에 맞춰서 최대/최소 설정 크기 지정해 주면 정말 좋겠어요)
         toplevel = Toplevel(tk)
         toplevel.geometry("320x200+820+100")
         toplevel.resizable(False, False)
@@ -211,23 +262,53 @@ def errorsetresistance(self):
         button = Button(toplevel, width = 10, text = "ok", overrelief = "solid", command = toplevel.destroy)  #  ok버튼 누르면 경고 창 삭제
         button.pack()
 
-validate_command = (userInterface.register(setresistance), '%P')
-invalid_command = (userInterface.register(errorsetresistance), '%P')
-explanationresistance = Label(userInterface, text = "▼저항값을 선택▼", height = 3)
-explanationresistance.pack(padx=4)
+# display.bind_all('<KeyPress>', keypressed)
 
-Circlespinbox = Spinbox(userInterface, width=10, from_=1, to=100, validate = 'all', validatecommand=validate_command, invalidcommand=invalid_command)
+validate_command = (userInterface.register(setradius), '%P')
+invalid_command = (userInterface.register(errorsetradius), '%P')
+explanationresistance = Label(userInterface, text = "▼반지름의를크기를 선택▼", height = 3) 
+explanationresistance.pack(padx=4) 
+
+
+
+def update_variable(*args):
+    global radius_value # global로 선언했으니 다른 곳에서 global radius어쩌고 안 써도 작동 됨 앙기모찌ㅋ
+    radius_value = radius_spinbox_var.get()
+
+radius_spinbox_var = IntVar() # 너희 때문에 추가근무하게 됐잖아 ㅡㅡ
+
+# 해결함 해보셈 textvariable로 radius_spinbox_var라고 말 해줬어야 했는데 안함 ㅋㅋ
+Circlespinbox = Spinbox(userInterface, width=10, from_=1, to=100, validate = 'all', validatecommand=validate_command, invalidcommand=invalid_command, textvariable=radius_spinbox_var)
 Circlespinbox.pack(padx=4) 
 
+radius_spinbox_var.trace('w', update_variable) # 이거 저번에도 떳는데 그냥 되던데 Spinbox 변화 감지/계속 업데이트 해줌(update_variable)
+radius_value = radius_spinbox_var.get() # 실행 화면에서 g키 누르면 이거 값 알 수 있음ㅋㅋ(터미널에 뜸) good NihahahaKufufuToriyaShubabababa
+
+# 김창섭,,네가 만든 Worlds, 네가 만든 Characters,Maplestory,
+#  Players'cheers,너의 가장 큰 Gloria Haters의 noise, 넌 mute,
+#  네 의지는 so strong, 로기견's Just Shadow , 더쿠's Just a spark,
+#  너의 fight,Always right Maplestory, 우리 의 인생, Passion, Dream ,
+#  네가 만든 Heart We're with you, in every battle, every war,
+#  Together we fight,together we renew.
 
 
 
 
+# 앞으로 spinbox 만들 때 각 spinbox의 값 여러 개 받으려면 아래 형식을 이용하시오.. (그런데 이것도 내가 할 것 같은 느낌..)
+# spinbox_values = [1spinbox.get(),
+#            2spinbox.get(),
+#            3spinbox.get(),
+#            4spinbox.get(),
+#            5spinbox.get()]
+# 리스트로 나타냈으니 ^하드코딩^ DlWlFkf말고 잘 해보셈 ㅋㅋ 
+
+# def                                      야심준석코딩하라고
 
 
 
-
-
+def whileTrue():
+    animate()
+    tk.after(100, whileTrue)
 
 whileTrue()
 
