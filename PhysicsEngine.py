@@ -1,5 +1,8 @@
 #2D Physics Engine goo hyun goose
+
 from tkinter import *
+
+import math
 tk=Tk()
 
 tk.title('Physics 2D CHANGP')
@@ -18,77 +21,68 @@ canvas.pack()
 objectList = []
 
 
-def mouse_position(event):                    #마우스 위치 받아오기
+#mass단위: kg
+
+
+def mouse_position_click(event):                    #마우스 위치 받아오기
     global objectList
     mousex, mousey = event.x, event.y
-    place_circle(mousex, mousey)
+    start_place_circle(mousex, mousey)
 
-def place_circle(x, y):                       #원 그리기
+def mouse_position_unclick(event):
+    global objectList
+    mx, my = event.x, event.y
+
+def start_place_circle(x, y):                       #원 그리기
     global objectList
     objectList.append([x, y, radius_value, 0, 0])   #[x location, y location, radius, x velocity, y velocity]
     canvas.create_oval(x-radius_value, y-radius_value, x+radius_value, y+radius_value)
 
-canvas.bind('<Button-1>', mouse_position)
+canvas.bind('<Button-1>', mouse_position_click)
 
-def falling(k):                                #중력 구현
-    global objectList
-    objectList[k][4] += 9.8
-    print(objectList, 'falling')
+canvas.bind('<ButtonRelease-1>', mouse_position_unclick)
+
+def falling(k):
+    # Gravity is 9.8 pixels per second^2
+    # gravity_value = 9.8
+    # Update y velocity with gravity (0.1 seconds per frame)
+    objectList[k][4] += gravity_value * 0.02
 
 def collisionCheck(k):
-    global xgap, ygap, objectList
-    for j in range(len(objectList)-1, k-1, -1):
-        xgap = objectList[k][0] - objectList[j][0]
-        ygap = objectList[k][1] - objectList[j][1]
+    for j in range(len(objectList)):
+        if k != j:
+            xgap = objectList[k][0] - objectList[j][0]
+            ygap = objectList[k][1] - objectList[j][1]
+            distance = math.sqrt(xgap**2 + ygap**2)
+            if distance <= (objectList[k][2] + objectList[j][2]):
+                collision(k, j, xgap, ygap, distance)
 
-        if xgap**2 + ygap**2 <= (objectList[k][2] + objectList[j][2])**2 :
-            collision(k, j)
+def collision(a, b, xgap, ygap, distance):
+    if distance <= 0:
+        distance = 0.01
+    nx = xgap / distance
+    ny = ygap / distance
+    
 
-def collision(a, b):
-    global objectList
-    objectList[a][3] = xgap*10
-    objectList[a][4] = ygap*(-10)
-    objectList[b][3] = xgap*(-10)
-    objectList[b][4] = ygap*10
+    p = mass_value * 1/10 * (objectList[a][3] * nx + objectList[a][4] * ny - objectList[b][3] * nx - objectList[b][4] * ny) / 2
+
+    objectList[a][3] -= p * nx
+    objectList[a][4] -= p * ny
+    objectList[b][3] += p * nx
+    objectList[b][4] += p * ny
 
 def animate():
-    global objectList
     for i in range(len(objectList)):
         falling(i)
         collisionCheck(i)
-
     for i in range(len(objectList)):
-        print(objectList)
-        canvas.move(i+1, objectList[i][3], objectList[i][4])
-        canvas.update()
+        objectList[i][0] += objectList[i][3]
+        objectList[i][1] += objectList[i][4]
+        canvas.coords(i+1, objectList[i][0]-objectList[i][2], objectList[i][1]-objectList[i][2], objectList[i][0]+objectList[i][2], objectList[i][1]+objectList[i][2])
 
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-#왜안돼?
-        
+# def azzui():
+# #     ...
 
-def azzui():
-    ...
 
 def clear():           # clear the window (기능 추가 필요함)
     global huhu
@@ -146,7 +140,7 @@ def aboutPE():
     lcbutton.pack()
 
 def PEhelp():
-    AYOE = "DirectCurrent Circuit Help \n Commands \n \n \n [m(ㅡ)] > [fill 'ㅡ'wire] \n [l(ㅣ)] > [fill 'ㅣ'wire] \n \n derived from 'ㅡ' is fill Current Distribution wire \n [n(ㅜ)] > [fill 'ㅜ'wire] \n [h(ㅗ)] > [fill 'ㅗ'wire] \n \n derived from 'ㅣ' is fill Current Collecting wire \n [j(ㅓ)] > [fill 'ㅓ'wire] \n [k(ㅏ)] > [fill 'ㅏ'wire] \n \n [s(ㄴ)] > [fill 'ㄴ'wire] \n [b] > [set battery]  \n [r] > [set resistance]  \n [space] > [rotate wire] \n [Esc] > [Exit] \n [Enter] > [Clear] \n [e] > [Erase] \n [o] > [Operate] \n [1] > [Resistance1] \n [2] > [Resistance2] \n [3] > [Resistance3] \n [4] > [Resistance4] \n [5] > [Resistance5] \n [6] > [Resistance6] "
+    AYOE = "Physics Engine Help \n Commands \n \n \n [m(ㅡ)] > [fill 'ㅡ'wire] \n [l(ㅣ)] > [fill 'ㅣ'wire] \n \n derived from 'ㅡ' is fill Current Distribution wire \n [n(ㅜ)] > [fill 'ㅜ'wire] \n [h(ㅗ)] > [fill 'ㅗ'wire] \n \n derived from 'ㅣ' is fill Current Collecting wire \n [j(ㅓ)] > [fill 'ㅓ'wire] \n [k(ㅏ)] > [fill 'ㅏ'wire] \n \n [s(ㄴ)] > [fill 'ㄴ'wire] \n [b] > [set battery]  \n [r] > [set resistance]  \n [space] > [rotate wire] \n [Esc] > [Exit] \n [Enter] > [Clear] \n [e] > [Erase] \n [o] > [Operate] \n [1] > [Resistance1] \n [2] > [Resistance2] \n [3] > [Resistance3] \n [4] > [Resistance4] \n [5] > [Resistance5] \n [6] > [Resistance6] "
     LCHelp = Toplevel(tk)
     LCHelp.geometry("320x520+820+100")
     LCHelp.resizable(False, False)
@@ -167,6 +161,17 @@ def nihahaha():  #  NiHaHaHa!!!!
     nilabel.pack(expand = 1, anchor = CENTER)
     print("Nihahaha!")
 
+def BuJeok():  #  NiHaHaHa!!!!
+    BuJeok = Toplevel(tk)
+    BuJeok.geometry("400x400")
+    BuJeok.resizable(False, False)
+    BuJeok.title("여러분도 기도하세요")
+    imageBuJeok = PhotoImage(file = "PrayToWorking.png")
+    Label.image = imageBuJeok # 이거 안쓰면 안 됨
+    Bulabel = Label(BuJeok, image = imageBuJeok, compound = "top")
+    Bulabel.pack(expand = 1, anchor = CENTER)
+    print("제발제발제발")
+
 texts = Text(userInterface, width=15, height=2)
 texts.insert(INSERT, "")
 texts.pack(padx=4)
@@ -185,15 +190,16 @@ menu2 = Menu(menubar, tearoff = 0, selectcolor = "green")
 
 menu2.add_radiobutton(label = "Undo", state = "disabled") # 미안한데 작동 안돼
 menu2.add_radiobutton(label = "Redo") # 미안한데 작동 안돼
-menu2.add_radiobutton(label = "Cut") # 미안한데 작동 안돼(, command = fuction 없으면 작동 안 된다 보면 됨)
+menu2.add_radiobutton(label = "Cut") # 미안한데 작동 안돼({, command = fuction}없으면 작동 안 된다 보면 됨)
 menubar.add_cascade(label = "Edit", menu = menu2)
 
 menu3 = Menu(menubar, tearoff = 0)
 
-menu3.add_checkbutton(label = "NA")
+menu3.add_checkbutton(label = "BuJeok", command = BuJeok)
+menu3.add_separator()
 menu3.add_checkbutton(label = "mapl")
 menu3.add_checkbutton(label = "nihahaha", command = nihahaha)
-menubar.add_cascade(label = "Run", menu = menu3)
+menubar.add_cascade(label = "Options", menu = menu3)
 
 menu4 = Menu(menubar, tearoff = 0)
 
@@ -231,7 +237,8 @@ def MikoMikoNyanNyan(event): # 미코미코 냥냥♪
     elif event.keysym == 'Return' : # 대충 Return=엔터키라는 뜻
         tempwarn()
     elif event.keysym == 'g' :
-        print(radius_value)
+        print("RADIUS:", radius_value)
+        print("GRAVITY:", gravity_value)
 
 tk.bind("<KeyPress>", MikoMikoNyanNyan)
 
@@ -239,14 +246,14 @@ tk.bind("<KeyPress>", MikoMikoNyanNyan)
 
 
 def setradius(self):
-    explanationresistance.config(text = '반지름 크기를 선택')
+    explanationresistance.config(text = '▼반지름의 크기를 선택▼')
     if self == '':
         return True
     
     valid = False
     
     if self.isdigit():
-        if (int(self) >= 0 and int(self) <= 100): # 0~100 값만 사용 가능함ㅋ
+        if (int(self) >= 50 and int(self) <= 100): # 50~100 값만 사용 가능함ㅋ
             valid = True
     return valid
 
@@ -255,7 +262,7 @@ def errorsetradius(self):
         toplevel = Toplevel(tk)
         toplevel.geometry("320x200+820+100")
         toplevel.resizable(False, False)
-        toplevel.title("ERROR: not a valid key")  # 창 이름
+        toplevel.title("ERROR: not a valid value")  # 창 이름
         label = Label(toplevel, text = unknowntext, width = 200, height = 50, fg = "red", relief = "solid", bitmap = "error", compound = "top")  #  unknowntext출력, i마크 표시(붉은색) 할 창 생성
         label.pack()
 
@@ -266,23 +273,52 @@ def errorsetradius(self):
 
 validate_command = (userInterface.register(setradius), '%P')
 invalid_command = (userInterface.register(errorsetradius), '%P')
-explanationresistance = Label(userInterface, text = "▼반지름의를크기를 선택▼", height = 3) 
-explanationresistance.pack(padx=4) 
+explanationresistance = Label(userInterface, text = "▼반지름의 크기를 선택▼", height = 3)
+explanationresistance.pack(padx=4)
 
 
 
 def update_variable(*args):
-    global radius_value # global로 선언했으니 다른 곳에서 global radius어쩌고 안 써도 작동 됨 앙기모찌ㅋ
+    global radius_value, gravity_value, mass_value  # global로 선언했으니 다른 곳에서 global radius어쩌고 안 써도 작동 됨 앙기모찌ㅋ
     radius_value = radius_spinbox_var.get()
+    gravity_value = gravity_spinbox_var.get()
+    mass_value = mass_spinbox_var.get()
+
+explanationgravity = Label(userInterface, text = "▼중력의 크기를 선택▼", height = 3)
+explanationgravity.pack(padx=4) 
 
 radius_spinbox_var = IntVar() # 너희 때문에 추가근무하게 됐잖아 ㅡㅡ
 
 # 해결함 해보셈 textvariable로 radius_spinbox_var라고 말 해줬어야 했는데 안함 ㅋㅋ
-Circlespinbox = Spinbox(userInterface, width=10, from_=1, to=100, validate = 'all', validatecommand=validate_command, invalidcommand=invalid_command, textvariable=radius_spinbox_var)
+Circlespinbox = Spinbox(userInterface, width=10, from_=20, to=100, validate = 'all', validatecommand=validate_command, invalidcommand=invalid_command, textvariable=radius_spinbox_var)
 Circlespinbox.pack(padx=4) 
 
-radius_spinbox_var.trace('w', update_variable) # 이거 저번에도 떳는데 그냥 되던데 Spinbox 변화 감지/계속 업데이트 해줌(update_variable)
+radius_spinbox_var.trace('w', update_variable) # Spinbox 변화 감지/계속 업데이트 해줌(update_variable)
 radius_value = radius_spinbox_var.get() # 실행 화면에서 g키 누르면 이거 값 알 수 있음ㅋㅋ(터미널에 뜸) good NihahahaKufufuToriyaShubabababa
+
+# /////////////////////////////////////////////////////
+# 칸 나누기
+
+gravity_spinbox_var = IntVar() # 너희 때문에 추가근무하게 됐잖아 ㅡㅡ
+
+
+gravityspinbox = Spinbox(userInterface, width=10, from_=9.8, to=100, validate = 'all', validatecommand=validate_command, invalidcommand=invalid_command, textvariable=gravity_spinbox_var)
+gravityspinbox.pack(padx=4) 
+
+gravity_spinbox_var.trace('w', update_variable)
+gravity_value = gravity_spinbox_var.get() # good NihahahaKufufuToriyaShubabababa
+
+
+# ///////////////////////////////////////////////////////
+
+mass_spinbox_var = IntVar() # 너희 때문에 추가근무하게 됐잖아 ㅡㅡ
+
+
+massspinbox = Spinbox(userInterface, width=10, from_=10, to=100, validate = 'all', validatecommand=validate_command, invalidcommand=invalid_command, textvariable=mass_spinbox_var)
+massspinbox.pack(padx=4) 
+
+mass_spinbox_var.trace('w', update_variable)
+mass_value = gravity_spinbox_var.get() # good NihahahaKufufuToriyaShubabababa
 
 # 김창섭,,네가 만든 Worlds, 네가 만든 Characters,Maplestory,
 #  Players'cheers,너의 가장 큰 Gloria Haters의 noise, 넌 mute,
@@ -292,9 +328,7 @@ radius_value = radius_spinbox_var.get() # 실행 화면에서 g키 누르면 이
 #  Together we fight,together we renew.
 
 
-
-
-# 앞으로 spinbox 만들 때 각 spinbox의 값 여러 개 받으려면 아래 형식을 이용하시오.. (그런데 이것도 내가 할 것 같은 느낌..)
+# 앞으로 spinbox 만들 때 각 spinbox의 값 여러 개 받으려면 아래 형식을 이용하시오..
 # spinbox_values = [1spinbox.get(),
 #            2spinbox.get(),
 #            3spinbox.get(),
@@ -302,14 +336,15 @@ radius_value = radius_spinbox_var.get() # 실행 화면에서 g키 누르면 이
 #            5spinbox.get()]
 # 리스트로 나타냈으니 ^하드코딩^ DlWlFkf말고 잘 해보셈 ㅋㅋ 
 
-# def                                      야심준석코딩하라고
+# def                                      야심준석코딩하라고<응아니야ㅋ
 
 
 
 
 def whileTrue():
+    global objectList
     animate()
-    tk.after(100, whileTrue)
+    tk.after(20, whileTrue)
 
 whileTrue()
 
