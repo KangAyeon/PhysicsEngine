@@ -1,7 +1,7 @@
 #2D Physics Engine goo hyun goose
 
 from tkinter import *
-
+import random
 import math
 tk=Tk()
 
@@ -19,24 +19,35 @@ canvas  = Canvas(display, relief="solid", bd=0, width = 600, height = 600, bg='w
 canvas.pack()
 
 objectList = []
-
+lastIndexian = 40
+colorList = ['deepskyblue','deepskyblue4','dimgray','dodgerblue','firebrick','floralwhite','forestgreen',\
+             'gold','gold3','gray','green2','green4','greenyellow','hotpink','indianred','khaki','khaki2',\
+                'lightblue','lavender','lawngreen','lemonchiffon','lightblue','lightcyan','whitesmoke',\
+                    'lightpink','lightsalmon','red','orange','yellow','navy','purple','black'] #외 RGB 않되 <> 어쩔 ㅋ
 
 #mass단위: kg
 
 
 def mouse_position_click(event):                    #마우스 위치 받아오기
-    global objectList
+    global objectList, lastIndexian
     mousex, mousey = event.x, event.y
     start_place_circle(mousex, mousey)
 
 def mouse_position_unclick(event):
     global objectList
-    mx, my = event.x, event.y
+    mouseEndx, mouseEndy = event.x, event.y
+    end_place_circle(startx, starty, mouseEndx, mouseEndy)
 
-def start_place_circle(x, y):                       #원 그리기
+def start_place_circle(x, y):                       #원 그리기 one? won?
+    global objectList, startx, starty                         
+    canvas.create_oval(x-radius_value, y-radius_value, x+radius_value, y+radius_value, fill=random.choice(colorList))
+    startx = x
+    starty = y
+
+def end_place_circle(x, y, ex, ey):
     global objectList
-    objectList.append([x, y, radius_value, 0, 0])   #[x location, y location, radius, x velocity, y velocity]
-    canvas.create_oval(x-radius_value, y-radius_value, x+radius_value, y+radius_value)
+    objectList.append([x, y, radius_value, (x-ex)*0.1, (y-ey)*0.1, mass_value])    #[x location, y location, radius, x velocity, y velocity, mass]
+
 
 canvas.bind('<Button-1>', mouse_position_click)
 
@@ -47,6 +58,10 @@ def falling(k):
     # gravity_value = 9.8
     # Update y velocity with gravity (0.1 seconds per frame)
     objectList[k][4] += gravity_value * 0.02
+    # print("falling")
+
+
+    
 
 def collisionCheck(k):
     for j in range(len(objectList)):
@@ -55,21 +70,30 @@ def collisionCheck(k):
             ygap = objectList[k][1] - objectList[j][1]
             distance = math.sqrt(xgap**2 + ygap**2)
             if distance <= (objectList[k][2] + objectList[j][2]):
-                collision(k, j, xgap, ygap, distance)
+                collision(k, j)
+            
 
-def collision(a, b, xgap, ygap, distance):
-    if distance <= 0:
-        distance = 0.01
-    nx = xgap / distance
-    ny = ygap / distance
+            
+        
+
+def collision(a, b):
+    global objectList
+
+    if objectList[a][0] >= objectList[b][0]:
+        objectList[a][3] = abs(objectList[b][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+        objectList[b][3] = -abs(objectList[a][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+    elif objectList[a][0] <= objectList[b][0]:
+        objectList[a][3] = -abs(objectList[b][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+        objectList[b][3] = abs(objectList[a][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+    if objectList[a][1] >= objectList[b][1]:
+        objectList[b][4] = -abs(objectList[a][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+        objectList[a][4] = abs(objectList[b][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+    elif objectList[a][1] <= objectList[b][1]:
+        objectList[b][4] = abs(objectList[a][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+        objectList[a][4] = -abs(objectList[b][5] * (abs(objectList[a][3]) + abs(objectList[b][3])) / (abs(objectList[a][5]) + abs(objectList[b][5])))
+    
     
 
-    p = mass_value * 1/10 * (objectList[a][3] * nx + objectList[a][4] * ny - objectList[b][3] * nx - objectList[b][4] * ny) / 2
-
-    objectList[a][3] -= p * nx
-    objectList[a][4] -= p * ny
-    objectList[b][3] += p * nx
-    objectList[b][4] += p * ny
 
 def animate():
     for i in range(len(objectList)):
@@ -78,16 +102,26 @@ def animate():
     for i in range(len(objectList)):
         objectList[i][0] += objectList[i][3]
         objectList[i][1] += objectList[i][4]
-        canvas.coords(i+1, objectList[i][0]-objectList[i][2], objectList[i][1]-objectList[i][2], objectList[i][0]+objectList[i][2], objectList[i][1]+objectList[i][2])
+        # print(lastIndexian)
+        canvas.coords(i+lastIndexian+1, objectList[i][0]-objectList[i][2], objectList[i][1]-objectList[i][2], objectList[i][0]+objectList[i][2], objectList[i][1]+objectList[i][2])
+        # print("animated")
 
-# def azzui():
-# #     ...
 
+def atsui(): # 격자 그리기
+    global lastIndexian
+    lastIndexian+=len(canvas.find("all"))
+    canvas.delete('all')
+    for s in range(20):                                          
+        canvas.create_line(30*s, 0, 30*s, 600, fill = "lightgray")
+    for s in range(20):
+        canvas.create_line(0, 30*s, 600, 30*s, fill = "lightgray")
 
-def clear():           # clear the window (기능 추가 필요함)
-    global huhu
-    huhu = 0
-    print(huhu)
+atsui()
+
+def clear():           # clear the window (기능 추가 필요함>>추가됨 ㅋㅋ 앙 개꿀띠)
+    global objectList
+    atsui()
+    objectList=[]
     
 
 def close():           # close the window
@@ -172,6 +206,10 @@ def BuJeok():  #  NiHaHaHa!!!!
     Bulabel.pack(expand = 1, anchor = CENTER)
     print("제발제발제발")
 
+
+    
+
+
 texts = Text(userInterface, width=15, height=2)
 texts.insert(INSERT, "")
 texts.pack(padx=4)
@@ -189,7 +227,7 @@ menubar.add_cascade(label = "File", menu = menu1)
 menu2 = Menu(menubar, tearoff = 0, selectcolor = "green")
 
 menu2.add_radiobutton(label = "Undo", state = "disabled") # 미안한데 작동 안돼
-menu2.add_radiobutton(label = "Redo") # 미안한데 작동 안돼
+menu2.add_radiobutton(label = "Redo") # 미안한데 작동 안돼 nihahahakufufutoriyashubababa
 menu2.add_radiobutton(label = "Cut") # 미안한데 작동 안돼({, command = fuction}없으면 작동 안 된다 보면 됨)
 menubar.add_cascade(label = "Edit", menu = menu2)
 
@@ -227,7 +265,7 @@ keypressed = 0
 def MikoMikoNyanNyan(event): # 미코미코 냥냥♪
     global keypressed
     keypressed = event.keysym
-    print(keypressed)
+    # print(keypressed)
         # test()
     if event.keysym == 'a' :
         kuhuhuhu()
@@ -239,6 +277,7 @@ def MikoMikoNyanNyan(event): # 미코미코 냥냥♪
     elif event.keysym == 'g' :
         print("RADIUS:", radius_value)
         print("GRAVITY:", gravity_value)
+        print("WallExist:", wallman)
 
 tk.bind("<KeyPress>", MikoMikoNyanNyan)
 
@@ -284,8 +323,7 @@ def update_variable(*args):
     gravity_value = gravity_spinbox_var.get()
     mass_value = mass_spinbox_var.get()
 
-explanationgravity = Label(userInterface, text = "▼중력의 크기를 선택▼", height = 3)
-explanationgravity.pack(padx=4) 
+
 
 radius_spinbox_var = IntVar() # 너희 때문에 추가근무하게 됐잖아 ㅡㅡ
 
@@ -294,10 +332,12 @@ Circlespinbox = Spinbox(userInterface, width=10, from_=20, to=100, validate = 'a
 Circlespinbox.pack(padx=4) 
 
 radius_spinbox_var.trace('w', update_variable) # Spinbox 변화 감지/계속 업데이트 해줌(update_variable)
-radius_value = radius_spinbox_var.get() # 실행 화면에서 g키 누르면 이거 값 알 수 있음ㅋㅋ(터미널에 뜸) good NihahahaKufufuToriyaShubabababa
+radius_value = radius_spinbox_var.get() # 실행 화면에서 g키 누르면 이거 값 알 수 있음ㅋㅋ(터미널에 뜸) good
 
 # /////////////////////////////////////////////////////
 # 칸 나누기
+explanationgravity = Label(userInterface, text = "▼중력의 크기를 선택▼", height = 3)
+explanationgravity.pack(padx=4) 
 
 gravity_spinbox_var = IntVar() # 너희 때문에 추가근무하게 됐잖아 ㅡㅡ
 
@@ -306,10 +346,13 @@ gravityspinbox = Spinbox(userInterface, width=10, from_=9.8, to=100, validate = 
 gravityspinbox.pack(padx=4) 
 
 gravity_spinbox_var.trace('w', update_variable)
-gravity_value = gravity_spinbox_var.get() # good NihahahaKufufuToriyaShubabababa
+gravity_value = gravity_spinbox_var.get() # good 
 
 
 # ///////////////////////////////////////////////////////
+
+explanationmass = Label(userInterface, text = "▼질량의 크기를 선택▼", height = 3)
+explanationmass.pack(padx=4) 
 
 mass_spinbox_var = IntVar() # 너희 때문에 추가근무하게 됐잖아 ㅡㅡ
 
@@ -318,7 +361,7 @@ massspinbox = Spinbox(userInterface, width=10, from_=10, to=100, validate = 'all
 massspinbox.pack(padx=4) 
 
 mass_spinbox_var.trace('w', update_variable)
-mass_value = gravity_spinbox_var.get() # good NihahahaKufufuToriyaShubabababa
+mass_value = gravity_spinbox_var.get() # good 
 
 # 김창섭,,네가 만든 Worlds, 네가 만든 Characters,Maplestory,
 #  Players'cheers,너의 가장 큰 Gloria Haters의 noise, 넌 mute,
@@ -334,18 +377,45 @@ mass_value = gravity_spinbox_var.get() # good NihahahaKufufuToriyaShubabababa
 #            3spinbox.get(),
 #            4spinbox.get(),
 #            5spinbox.get()]
-# 리스트로 나타냈으니 ^하드코딩^ DlWlFkf말고 잘 해보셈 ㅋㅋ 
-
-# def                                      야심준석코딩하라고<응아니야ㅋ
 
 
-
+variety1 = IntVar()
+remotebutton1 = Checkbutton(userInterface, text = "WallExist", variable=variety1)
+remotebutton1.pack(padx=4, pady=10)
+ # WallExist 체크박스에 있는 값은 wallman에 저장됨
+remotebutton1.select()
+# if wallman == 0:
+#     wallman = False
+# elif wallman ==1:
+#     wallman = True
+wallman= "%d" % variety1.get()
+wallExist=wallman
 
 def whileTrue():
-    global objectList
-    animate()
-    tk.after(20, whileTrue)
+    global objectList, wallman
+    # print(wallman)
+    wallman = "%d" % variety1.get()
+    if wallman=='1':
+        # print('im changing')
+        for ob in range(len(objectList)):
+            if objectList[ob][0] >= 590 - objectList[ob][2] and objectList[ob][3] >= 0: 
+                objectList[ob][3] *= -1
+            elif objectList[ob][0] <=  objectList[ob][2] + 10 and objectList[ob][3] <= 0:
+                objectList[ob][3] *= -1
+            elif objectList[ob][1] >= 590 - objectList[ob][2] and objectList[ob][4] >= 0:
+                objectList[ob][4] *= -1
+                objectList[ob][4] -= gravity_value * 0.02
+            elif objectList[ob][1] <=  objectList[ob][2] + 10 and objectList[ob][4] <= 0:
+                objectList[ob][4] *= -1
+                objectList[ob][4] += gravity_value * 0.02
+                
 
+    animate()
+    # print("animated")
+    tk.after(30, whileTrue)
+    
+    
+Button(userInterface, text = "CLEAR", command = tempwarn, width = 10, height = 1).pack()
 whileTrue()
 
 tk.mainloop()
